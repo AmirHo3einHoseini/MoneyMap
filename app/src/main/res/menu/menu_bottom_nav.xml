@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_dashboard"
+        android:icon="@drawable/account_balance"
+        android:title="داشبورد" />
+    <item
+        android:id="@+id/nav_transactions"
+        android:icon="@drawable/attach_money"
+        android:title="تراکنش‌ها" />
+    <item
+        android:id="@+id/nav_budget"
+        android:icon="@drawable/account_balance_wallet"
+        android:title="بودجه" />
+    <item
+        android:id="@+id/nav_report"
+        android:icon="@drawable/round_bar_chart"
+        android:title="گزارش" />
+
+</menu>
