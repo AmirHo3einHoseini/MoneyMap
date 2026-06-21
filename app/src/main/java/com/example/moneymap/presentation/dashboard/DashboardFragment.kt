@@ -11,14 +11,16 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.moneymap.R
 import com.example.moneymap.databinding.FragmentDashboardBinding
 import com.example.moneymap.domain.usecase.DashboardSummary
 import com.example.moneymap.presentation.auth.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
-
+@AndroidEntryPoint
 class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
@@ -46,7 +48,7 @@ class DashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setRecyclerView()
         loadData()
-        observUiState()
+        observeUiState()
     }
 
     private fun setRecyclerView() {
@@ -64,6 +66,35 @@ class DashboardFragment : Fragment() {
                     when (state) {
                         is DashboardViewModel.UiState.Loading -> {
                             binding.progressbar.visibility = View.VISIBLE
+                        }
+
+                        is DashboardViewModel.UiState.Success -> {
+                            binding.progressbar.visibility = View.GONE
+                            updateSummary(state.summary)
+                            transactionAdapter.submitList(state.recentTransactions)
+                        }
+
+                        is DashboardViewModel.UiState.Error -> {
+                            binding.progressbar.visibility = View.GONE
+                            Snackbar.make(binding.root, state.message, Snackbar.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeUiState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    when (state) {
+                        is DashboardViewModel.UiState.Loading -> {
+                            binding.progressbar.visibility = View.VISIBLE
+                            delay(10000.milliseconds)
+                            binding.progressbar.visibility = View.GONE
+                            binding.txtEmpty.visibility= View.VISIBLE
+                            binding.txtTitle.visibility= View.GONE
                         }
 
                         is DashboardViewModel.UiState.Success -> {

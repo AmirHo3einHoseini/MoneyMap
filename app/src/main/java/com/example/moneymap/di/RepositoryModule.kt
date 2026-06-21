@@ -1,6 +1,9 @@
 package com.example.moneymap.di
 
-import com.example.moneymap.domain.model.Category
+import com.example.moneymap.data.repository.BudgetRepositoryImpl
+import com.example.moneymap.data.repository.CategoryRepositoryImpl
+import com.example.moneymap.data.repository.TransactionRepositoryImpl
+import com.example.moneymap.data.repository.UserRepositoryImpl
 import com.example.moneymap.domain.repository.BudgetRepository
 import com.example.moneymap.domain.repository.CategoryRepository
 import com.example.moneymap.domain.repository.TransactionRepository
@@ -13,22 +16,22 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RepositoryModule {
+abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindUserRepository(impl: UserRepositoriImpl): UserRepository
+    abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
 
     @Binds
     @Singleton
-    abstract fun bindTransactionRepository(impl: TransactionRepositoriImpl): TransactionRepository
+    abstract fun bindTransactionRepository(impl: TransactionRepositoryImpl): TransactionRepository
 
     @Binds
     @Singleton
-    abstract fun bindBudgetRepository(impl: BudgetRepositoriImpl): BudgetRepository
+    abstract fun bindBudgetRepository(impl: BudgetRepositoryImpl): BudgetRepository
 
     @Binds
     @Singleton
-    abstract fun bindCategoryRepository(impl: CategoryRepositoriImpl): CategoryRepository
+    abstract fun bindCategoryRepository(impl: CategoryRepositoryImpl): CategoryRepository
 
 }

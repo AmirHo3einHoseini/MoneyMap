@@ -82,6 +82,16 @@ class BudgetViewModel @Inject constructor(
         }
     }
 
+    fun deleteBudget(id: Long) {
+        viewModelScope.launch {
+            when (val result = deleteBudgetUseCase(id)) {
+                is Error -> _uiState.value = UiState.Error(result.message.toString())
+                else -> Unit
+            }
+        }
+    }
+
+
     fun resetState() {
         _uiState.value = UiState.Idle
     }

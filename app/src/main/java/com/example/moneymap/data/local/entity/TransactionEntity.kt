@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.example.moneymap.domain.model.Category
 
 @Entity(
     tableName = "transactions",
@@ -16,7 +15,7 @@ import com.example.moneymap.domain.model.Category
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
-            entity = Category::class,
+            entity = CategoryEntity::class,
             parentColumns = ["id"],
             childColumns = ["categoryId"],
             onDelete = ForeignKey.CASCADE

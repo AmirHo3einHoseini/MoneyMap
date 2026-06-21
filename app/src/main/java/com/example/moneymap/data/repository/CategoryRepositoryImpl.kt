@@ -8,6 +8,7 @@ import com.example.moneymap.domain.model.TransactionType
 import com.example.moneymap.domain.repository.CategoryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -26,7 +27,9 @@ class CategoryRepositoryImpl @Inject constructor(
 
     override fun getCategoriesByType(type: TransactionType): Flow<List<Category>> {
         return categoryDao.getCategoriesByType(type.name)
+            .flowOn(Dispatchers.IO)
             .map { list ->
+
                 list.map {
                     it.toDomain()
                 }

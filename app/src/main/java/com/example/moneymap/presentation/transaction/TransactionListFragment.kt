@@ -1,33 +1,35 @@
 package com.example.moneymap.presentation.transaction
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.moneymap.R
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.moneymap.databinding.FragmentTransactionListBinding
+import com.example.moneymap.presentation.auth.AuthViewModel
+import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import java.util.Calendar
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [TransactionListFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
+@AndroidEntryPoint
 class TransactionListFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private var _binding: FragmentTransactionListBinding? = null
+    private val binding get() = _binding!!
+    private val viewModel: TransactionViewModel by viewModels()
+    private val authViewModel: AuthViewModel by activityViewModels()
+    private lateinit var adapter: TransactionAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+
     }
 
     override fun onCreateView(
@@ -35,26 +37,84 @@ class TransactionListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_transaction_list, container, false)
+        _binding = FragmentTransactionListBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment TransactionListFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            TransactionListFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupRecyclerView()
+        loadDate()
+        observeUiState()
+    }
+
+
+    private fun loadDate() {
+        val calendar = Calendar.getInstance()
+        viewLifecycleOwner.lifecycleScope.launch {
+            authViewModel.savedUserId.first().let { userId ->
+                if (userId != -1L) {
+                    viewModel.loadTransactions(
+                        userId,
+                        calendar.get(Calendar.MONTH) + 1,
+                        calendar.get(Calendar.YEAR)
+                    )
                 }
             }
+        }
     }
+
+
+    private fun observeUiState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    when (state) {
+                        is TransactionViewModel.UiState.Loading -> {
+                            binding.progresbar.visibility = View.VISIBLE
+                        }
+
+                        is TransactionViewModel.UiState.TransactionList -> {
+                            binding.progresbar.visibility = View.VISIBLE
+                            if (state.transactions.isEmpty()) {
+                                binding.txtEmpty.visibility = View.VISIBLE
+                                binding.recyclerList.visibility = View.GONE
+                            } else {
+                                binding.txtEmpty.visibility = View.GONE
+                                binding.recyclerList.visibility = View.VISIBLE
+                                adapter.submitList(state.transactions)
+                            }
+
+                        }
+
+                        is TransactionViewModel.UiState.Error -> {
+                            binding.progresbar.visibility = View.GONE
+                            Snackbar.make(binding.root, state.message, Snackbar.LENGTH_LONG).show()
+
+                        }
+
+                        else -> Unit
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setupRecyclerView() {
+        adapter = TransactionAdapter(
+            onDeleteClick = { transaction ->
+                viewModel.deleteTransaction(transaction.id)
+            }
+        )
+        binding.recyclerList.apply {
+            this.adapter = this@TransactionListFragment.adapter
+            layoutManager = LinearLayoutManager(requireContext())
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
 }

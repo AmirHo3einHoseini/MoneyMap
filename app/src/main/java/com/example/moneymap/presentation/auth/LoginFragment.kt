@@ -12,10 +12,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.moneymap.databinding.FragmentLoginBinding
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.flow.first
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-
+@AndroidEntryPoint
 class LoginFragment : Fragment() {
 
     private var _binding: FragmentLoginBinding? = null
@@ -38,20 +38,20 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        checkAlreadyLoggedIn()
+//        checkAlreadyLoggedIn()
         setupClickListener()
         observeUiState()
     }
 
-    private fun checkAlreadyLoggedIn() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.savedUserId.first().let { userId ->
-                if (userId != -1L) {
-                    navigateToDashboard()
-                }
-            }
-        }
-    }
+//    private fun checkAlreadyLoggedIn() {
+//        viewLifecycleOwner.lifecycleScope.launch {
+//            viewModel.savedUserId.first().let { userId ->
+//                if (userId != -1L) {
+//                    navigateToDashboard()
+//                }
+//            }
+//        }
+//    }
 
     private fun setupClickListener() {
         binding.btnLogin.setOnClickListener {

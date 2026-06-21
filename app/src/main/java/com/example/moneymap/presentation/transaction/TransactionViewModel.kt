@@ -12,7 +12,9 @@ import com.example.moneymap.domain.usecase.GetCategoriesUseCase
 import com.example.moneymap.domain.usecase.GetTransactionUseCase
 import com.example.moneymap.util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -26,7 +28,7 @@ class TransactionViewModel @Inject constructor(
     private val deleteTransactionUseCase: DeleteTransactionUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val preferencesDataStore: UserPreferencesDataStore
-): ViewModel(){
+) : ViewModel() {
 
 
     sealed class UiState {
@@ -36,8 +38,13 @@ class TransactionViewModel @Inject constructor(
         data class TransactionList(val transactions: List<Transaction>) : UiState()
         data class Error(val message: String) : UiState()
     }
+
     private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+
+    private val _snackBar = MutableSharedFlow<String>()
+    val snackBar: SharedFlow<String> = _snackBar
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories: StateFlow<List<Category>> = _categories.asStateFlow()
@@ -55,9 +62,10 @@ class TransactionViewModel @Inject constructor(
 
     fun loadCategories(type: TransactionType) {
         viewModelScope.launch {
-            getCategoriesUseCase(type).collect { list ->
-                _categories.value = list
-            }
+            getCategoriesUseCase(type)
+                .collect { list ->
+                    _categories.value = list
+                }
         }
     }
 
@@ -83,7 +91,11 @@ class TransactionViewModel @Inject constructor(
             )
             when (val result = addTransactionUseCase(transaction)) {
                 is Result.Success -> _uiState.value = UiState.TransactionAdded
-                is Result.Error -> _uiState.value = UiState.Error(result.message)
+                is Result.Error -> {
+                    _uiState.value = UiState.Error(result.message)
+                    _snackBar.emit(result.message)
+                }
+
                 else -> Unit
             }
         }

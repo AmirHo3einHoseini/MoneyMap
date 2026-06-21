@@ -13,8 +13,9 @@ import androidx.navigation.fragment.findNavController
 import com.example.moneymap.R
 import com.example.moneymap.databinding.FragmentRegisterBinding
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-
+@AndroidEntryPoint
 class RegisterFragment : Fragment() {
     private var _binding: FragmentRegisterBinding? = null
     private val binding get() = _binding!!

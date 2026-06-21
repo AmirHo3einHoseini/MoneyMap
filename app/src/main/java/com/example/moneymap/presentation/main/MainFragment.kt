@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.example.moneymap.R
 import com.example.moneymap.databinding.FragmentMainBinding
 import com.example.moneymap.presentation.auth.AuthViewModel
@@ -13,7 +14,9 @@ import com.example.moneymap.presentation.budget.BudgetFragment
 import com.example.moneymap.presentation.dashboard.DashboardFragment
 import com.example.moneymap.presentation.report.ReportFragment
 import com.example.moneymap.presentation.transaction.TransactionListFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainFragment : Fragment() {
 
     private var _binding: FragmentMainBinding? = null
@@ -65,9 +68,9 @@ class MainFragment : Fragment() {
 
     private fun setupFab() {
         binding.fabAddTransaction.setOnClickListener {
-//            findNavController().navigate(
-//                R.id.action_main_to_add_transaction
-//            )
+            findNavController().navigate(
+                R.id.action_main_to_add_transaction
+            )
         }
     }
 
